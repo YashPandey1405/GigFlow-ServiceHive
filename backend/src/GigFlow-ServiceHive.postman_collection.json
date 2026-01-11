@@ -1,0 +1,236 @@
+{
+	"info": {
+		"_postman_id": "fe843558-19e9-49ea-ae10-a97a1f52e962",
+		"name": "GigFlow-ServiceHive",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "44251062"
+	},
+	"item": [
+		{
+			"name": "Auth & HealthCheck",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"yashpandey@gmail.com\",\r\n  \"username\": \"yashpandey\",\r\n  \"fullname\": \"Yash Pandey\",\r\n  \"password\": \"YashPandey2907\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RegisterUser",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"yashpandey@gmail.com\",\r\n  \"username\": \"yashpandey\",\r\n  \"fullname\": \"Yash Pandey\",\r\n  \"password\": \"YashPandey2907\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/auth/register",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Gig",
+			"item": [
+				{
+					"name": "getGigs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/v1/gig",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"gig"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "postGig",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"Full Stack MERN Developer\",\r\n  \"description\": \"He Must be An Final Year Student In CS Background\",\r\n  \"budget\": \"20000\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/gig",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"gig"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bids",
+			"item": [
+				{
+					"name": "postBid",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"gigId\": \"6963dce1fb7121efa96f7353\",\r\n    \"message\": \"Myself Yash Pandey, Final Year CS Student At Mait With 8.82 CGPA\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/bids",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"bids"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getAllBids",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"gigId\": \"6963dce1fb7121efa96f7353\",\r\n    \"message\": \"Myself Yash Pandey, Final Year CS Student At Mait With 8.82 CGPA\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/bids/6963dce1fb7121efa96f7353",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"bids",
+								"6963dce1fb7121efa96f7353"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "registerBid",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"gigId\": \"6963dce1fb7121efa96f7353\",\r\n    \"message\": \"Myself Yash Pandey, Final Year CS Student At Mait With 8.82 CGPA\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/bids/6963df0031695bbde5c31e53/hire",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"bids",
+								"6963df0031695bbde5c31e53",
+								"hire"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Healthcheck",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/api/v1/healthcheck",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"healthcheck"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "",
+			"type": "default"
+		}
+	]
+}
