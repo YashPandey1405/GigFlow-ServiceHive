@@ -6,38 +6,31 @@ import { Gig } from "../models/gig.models.js";
 import { Bid } from "../models/bid.models.js";
 
 const getAllBidsOnGig = asyncHandler(async (req, res) => {
-  const gigId = req.params.gigId;
-  try {
-    // Check Whether The Gig Exists Or Not....
-    const gigExists = await Gig.findById(gigId).lean();
-    if (!gigExists) {
-      throw new ApiError(404, "Gig Not Found");
-    }
+  const { gigId } = req.params;
 
-    const allBids = await Bid.find({ gigId: gigExists._id }).populate(
-      "freelancerId",
-      "avatar username fullname email",
-    );
-
-    // Set cookies and redirect
-    const response = new ApiResponse(
-      200,
-      gigExists,
-      allBids,
-      "All Bids Registered On GigFlow Platform With This Gig",
-    );
-
-    // Send All Projects To The Frontend....
-    return res.status(response.statusCode).json(response);
-  } catch (error) {
-    // Handle any errors that occur during user creation
-    throw new ApiError(500, "Internal server error", [
-      {
-        field: "server",
-        message: "Internal server error In The getGigs Controller",
-      },
-    ]);
+  // 1. Check if gig exists
+  const gigExists = await Gig.findById(gigId).lean();
+  if (!gigExists) {
+    throw new ApiError(404, "Gig not found");
   }
+
+  // 2. Fetch all bids for this gig
+  const allBids = await Bid.find({ gigId })
+    .populate("freelancerId", "avatar username fullname email")
+    .lean();
+
+  // 3. Send correct response
+  const response = new ApiResponse(
+    200,
+    {
+      gig: gigExists,
+      bids: allBids,
+      totalBids: allBids.length,
+    },
+    "All bids fetched successfully for this gig",
+  );
+
+  return res.status(200).json(response);
 });
 
 const postBid = asyncHandler(async (req, res) => {
