@@ -34,6 +34,7 @@ router
 router.route("/get-user/:userID").get(getCurrentUser);
 
 // Routes & Controllers Which Need User Authorization & '_id'....
-router.route("/logout").post(verifyJWT, logoutUser);
+router.route("/logout").post(logoutUser);
+// router.route("/logout").post(verifyJWT, logoutUser);
 
 export default router;

@@ -2,6 +2,8 @@ import { asyncHandler } from "../utils/async-handler.js";
 import { ApiError } from "../utils/api-error.js";
 import { ApiResponse } from "../utils/api-response.js";
 import { User } from "../models/user.models.js";
+import { Gig } from "../models/gig.models.js";
+import { Bid } from "../models/bid.models.js";
 import { uploadOnCloudinary } from "../utils/Cloudinary.js";
 
 // Common Method To Generate Access And Refresh Tokens....
@@ -45,6 +47,8 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required", errors);
   }
 
+  console.log("File received in registerUser:", req.file);
+
   // Get The Local Path Of The Image Uploaded By The Multer.....
   const localFilePath = req.file?.path;
 
@@ -54,6 +58,8 @@ const registerUser = asyncHandler(async (req, res) => {
       { field: "Image", message: "File Not Got Uploaded On The Server" },
     ]);
   }
+
+  console.log("Local file path:", localFilePath);
 
   // Variale Which Will Actually Hold An Cloudinary Public URL.....
   let imageUrl = null;
@@ -69,11 +75,14 @@ const registerUser = asyncHandler(async (req, res) => {
     imageUrl = cloudinaryResult.secure_url;
   }
 
+  console.log("Image URL from Cloudinary:", imageUrl);
+
   try {
     // Check if user already exists
     const existingUser = await User.findOne({
       $or: [{ email }, { username }],
     });
+    console.log("Existing user check:", existingUser);
 
     // If user already exists, throw an error.....
     if (existingUser) {
@@ -87,6 +96,7 @@ const registerUser = asyncHandler(async (req, res) => {
         ]);
       }
     }
+    console.log("No existing user found, proceeding to create new user.");
 
     // Creates a new User document & Saves it to your MongoDB database.
     // await newUser.save(); --> No need as it's already saved in the create method
@@ -111,6 +121,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(
       newUser._id,
     );
+    console.log("Access and Refresh tokens generated.");
 
     // Get Above Created user info without password & refreshToken
     const loggedInUser = await User.findById(newUser._id).select(
@@ -275,8 +286,33 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
-  const userID = req.params.userID;
-  console.log("UserID in getCurrentUser:", userID);
+  const userId = req.params.userID;
+
+  // 1️⃣ Find user
+  const existingUser = await User.findById(userId).select(
+    "-password -refreshToken",
+  );
+
+  if (!existingUser) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // 2️⃣ Count related data
+  const totalGigs = await Gig.countDocuments({ ownerId: userId });
+  const totalBids = await Bid.countDocuments({ freelancerId: userId });
+
+  // 3️⃣ Send response
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        user: existingUser,
+        totalGigs,
+        totalBids,
+      },
+      "User details fetched successfully",
+    ),
+  );
 });
 
 export { getCurrentUser, loginUser, logoutUser, registerUser };

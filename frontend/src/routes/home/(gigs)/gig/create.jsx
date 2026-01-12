@@ -1,16 +1,18 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import apiClient from "../../../../services/apiClient";
+import apiClient from "../../../../../services/apiClient";
 import { useState } from "react";
 
-export const Route = createFileRoute("/home/(bids)/bid/$gigId")({
+export const Route = createFileRoute("/home/(gigs)/gig/create")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const router = useRouter();
-  const { gigId } = Route.useParams();
 
-  const [message, setMessage] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [budget, setBudget] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -20,22 +22,15 @@ function RouteComponent() {
     setError("");
 
     try {
-      // 🔁 Adjust method name if needed
-      const response = await apiClient.postBid(gigId, message);
+      const response = await apiClient.postgig(title, description, budget);
 
       if (response?.success) {
-        router.navigate({
-          to: "/home/gig/$gigId",
-          params: { gigId },
-        });
-      } else {
         router.navigate({ to: "/home" });
+      } else {
+        setError(response?.message || "Failed to post gig.");
       }
     } catch (err) {
-      setError("Failed to place bid. Please try again.");
-      setTimeout(() => {
-        router.navigate({ to: "/home" });
-      }, 1200);
+      setError("Server error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -46,9 +41,9 @@ function RouteComponent() {
       <div className="w-full max-w-lg rounded-2xl bg-zinc-900/80 backdrop-blur border border-zinc-800 shadow-2xl p-8">
         {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold">Place a Bid</h1>
+          <h1 className="text-3xl font-bold">Post a New Gig</h1>
           <p className="text-sm text-zinc-400 mt-1">
-            Tell the client why you’re the right fit
+            Share your requirement with the community
           </p>
         </div>
 
@@ -63,15 +58,43 @@ function RouteComponent() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm text-zinc-400 mb-1">
-              Your Proposal
+              Gig Title
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              placeholder="e.g. Full Stack MERN Developer"
+              className="w-full rounded-lg bg-zinc-800 border border-zinc-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-zinc-400 mb-1">
+              Description
             </label>
             <textarea
               rows={5}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               required
-              placeholder="Write a short message explaining your skills, timeline, or approach..."
+              placeholder="Describe the work, expectations, skills required..."
               className="w-full rounded-lg bg-zinc-800 border border-zinc-700 px-4 py-3 text-white resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-zinc-400 mb-1">
+              Budget (₹)
+            </label>
+            <input
+              type="number"
+              value={budget}
+              onChange={(e) => setBudget(e.target.value)}
+              required
+              placeholder="e.g. 20000"
+              className="w-full rounded-lg bg-zinc-800 border border-zinc-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -80,7 +103,7 @@ function RouteComponent() {
             disabled={loading}
             className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 transition text-white font-medium py-2 disabled:opacity-60"
           >
-            {loading ? "Submitting Bid..." : "Submit Bid"}
+            {loading ? "Posting Gig..." : "Post Gig"}
           </button>
         </form>
 

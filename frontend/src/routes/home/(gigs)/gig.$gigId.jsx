@@ -1,6 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import apiClient from "../../../../services/apiClient";
+import { authStore } from "../../../store/authStore";
+import Navbar from "../../../../Components/Navbar";
 
 export const Route = createFileRoute("/home/(gigs)/gig/$gigId")({
   component: RouteComponent,
@@ -8,12 +10,17 @@ export const Route = createFileRoute("/home/(gigs)/gig/$gigId")({
 
 function RouteComponent() {
   const { gigId } = Route.useParams();
+  const router = useRouter();
+
+  const loggedInUserIdZudtand = authStore((state) => state.loggedInUserId);
 
   const [gigData, setGigData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isOwner, setIsOwner] = useState(false);
   const [error, setError] = useState(false);
   const [message, setMessage] = useState("");
 
+  // 🔹 Fetch gig details
   useEffect(() => {
     const fetchGigByID = async () => {
       try {
@@ -21,8 +28,10 @@ function RouteComponent() {
 
         if (response?.success) {
           setGigData(response.data);
-          console.log(response.data);
           setMessage(response.message || "");
+
+          const ownerId = response.data.gig.ownerId;
+          setIsOwner(String(ownerId) === String(loggedInUserIdZudtand));
         } else {
           setError(true);
           setMessage(response?.message || "Failed to fetch gig.");
@@ -36,19 +45,34 @@ function RouteComponent() {
     };
 
     fetchGigByID();
-  }, [gigId]);
+  }, [gigId, loggedInUserIdZudtand]);
 
+  // 🔹 Accept Bid (Owner only)
+  const handleAcceptBid = async (bidId) => {
+    try {
+      const response = await apiClient.selectBid(bidId);
+
+      if (response?.success) {
+        router.navigate({ to: "/home" });
+      }
+    } catch (err) {
+      alert("Failed to accept bid. Please try again.");
+    }
+  };
+
+  // 🔹 Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-zinc-900 via-black to-zinc-900 text-zinc-400 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-black to-zinc-900 text-zinc-400 flex items-center justify-center">
         Fetching gig details...
       </div>
     );
   }
 
+  // 🔹 Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-zinc-900 via-black to-zinc-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-black to-zinc-900 flex items-center justify-center">
         <div className="bg-red-500/10 text-red-400 border border-red-500/30 px-6 py-4 rounded-lg">
           {message}
         </div>
@@ -59,38 +83,14 @@ function RouteComponent() {
   const { gig, bids, totalBids } = gigData;
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-zinc-900 via-black to-zinc-900 text-white">
-      {/* Navbar */}
-      <nav className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur">
-        <Link to="/home" className="text-xl font-bold">
-          GigFlow
-        </Link>
+    <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-black to-zinc-900 text-white">
+      <Navbar />
 
-        <div className="flex items-center gap-4">
-          {/* Profile Avatar */}
-          <Link to="/profile">
-            <img
-              src="https://via.placeholder.com/40"
-              alt="User"
-              className="w-10 h-10 rounded-full border border-zinc-700 hover:border-indigo-500 transition"
-            />
-          </Link>
-
-          {/* Logout Button */}
-          <Link to="/logout">
-            <button className="rounded-lg bg-red-600 hover:bg-red-700 transition px-4 py-2 text-sm font-medium text-white">
-              Logout
-            </button>
-          </Link>
-        </div>
-      </nav>
-
-      {/* Main */}
       <main className="max-w-5xl mx-auto px-6 py-10 space-y-10">
-        {/* Gig Details */}
+        {/* ================= GIG DETAILS ================= */}
         <section
           className={`rounded-2xl border p-8 transition ${
-            gig?.status === "assigned"
+            gig.status === "assigned"
               ? "bg-emerald-500/10 border-emerald-500/30"
               : "bg-indigo-500/10 border-indigo-500/30"
           }`}
@@ -98,15 +98,14 @@ function RouteComponent() {
           <div className="flex items-start justify-between mb-4">
             <h1 className="text-3xl font-bold">{gig.title}</h1>
 
-            {/* Status Badge */}
             <span
               className={`px-4 py-1 rounded-full text-sm font-medium capitalize ${
-                gig?.status === "assigned"
+                gig.status === "assigned"
                   ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
                   : "bg-indigo-500/20 text-indigo-400 border border-indigo-500/40"
               }`}
             >
-              {gig?.status || "open"}
+              {gig.status}
             </span>
           </div>
 
@@ -117,7 +116,7 @@ function RouteComponent() {
               <span className="text-zinc-500">Budget</span>
               <p
                 className={`font-semibold text-lg ${
-                  gig?.status === "assigned"
+                  gig.status === "assigned"
                     ? "text-emerald-400"
                     : "text-indigo-400"
                 }`}
@@ -140,12 +139,13 @@ function RouteComponent() {
           </div>
         </section>
 
-        {/* Bids Section */}
+        {/* ================= BIDS SECTION ================= */}
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold">Freelancer Bids</h2>
 
-            {gig?.status !== "assigned" && (
+            {/* Place Bid (Non-owner only) */}
+            {gig.status !== "assigned" && !isOwner && (
               <Link
                 to="/home/bid/$gigId"
                 params={{ gigId: gig._id }}
@@ -190,7 +190,6 @@ function RouteComponent() {
                       </p>
                     </div>
 
-                    {/* Status Badge */}
                     <span
                       className={`text-xs px-3 py-1 rounded-full border ${
                         bid.status === "hired"
@@ -202,11 +201,26 @@ function RouteComponent() {
                     </span>
                   </div>
 
-                  <p className="text-sm text-zinc-400 mb-3">{bid.message}</p>
+                  <p className="text-sm text-zinc-400 mb-4">{bid.message}</p>
 
-                  <span className="text-xs text-zinc-500">
-                    Bid placed on {new Date(bid.createdAt).toLocaleDateString()}
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-zinc-500">
+                      Bid placed on{" "}
+                      {new Date(bid.createdAt).toLocaleDateString()}
+                    </span>
+
+                    {/* ✅ Accept Button (OWNER ONLY) */}
+                    {isOwner &&
+                      gig.status !== "assigned" &&
+                      bid.status !== "hired" && (
+                        <button
+                          onClick={() => handleAcceptBid(bid._id)}
+                          className="rounded-lg bg-emerald-600 hover:bg-emerald-700 transition px-4 py-2 text-sm font-medium"
+                        >
+                          Accept
+                        </button>
+                      )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -216,3 +230,5 @@ function RouteComponent() {
     </div>
   );
 }
+
+export default RouteComponent;

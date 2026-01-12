@@ -36,7 +36,7 @@ const getAllBidsOnGig = asyncHandler(async (req, res) => {
 const postBid = asyncHandler(async (req, res) => {
   const { gigId, message } = req.body;
 
-  // Extra validation When The Required Fields Are Missing....
+  // 1️⃣ Basic validation
   if (!gigId || !message) {
     throw new ApiError(400, "Gig ID and message are required", [
       {
@@ -46,159 +46,131 @@ const postBid = asyncHandler(async (req, res) => {
     ]);
   }
 
-  // req.user is Available Due To The VerifyJWT Middleware Used before this Controller...
-  const userID = req.user._id;
+  const userId = req.user._id;
 
-  try {
-    console.log("1");
-    const checkGig = await Gig.findById(gigId);
-
-    if (!checkGig) {
-      throw new ApiError(404, "Gig Not Found");
-    }
-
-    if (checkGig.ownerId.toString() === userID) {
-      throw new ApiError(400, "You cannot bid on your own gig");
-    }
-
-    // To Check Whether The User Has Already Placed A Bid On This Gig Or Not....
-    const existingBid = await Bid.findOne({
-      gigId: checkGig._id,
-      freelancerId: userID,
-    });
-
-    if (existingBid) {
-      throw new ApiError(409, "You have already placed a bid on this gig");
-    }
-
-    // To ensure it's a proper ObjectId type, not just a string.....
-    // userid: new mongoose.Types.ObjectId(userID)
-    const newBid = await Bid.create({
-      gigId: checkGig._id,
-      freelancerId: new mongoose.Types.ObjectId(userID),
-      message,
-    });
-
-    console.log("2");
-
-    // If The Creation Of The Project Fails....
-    if (!newBid) {
-      throw new ApiError(400, "Bid Creation Failed");
-    }
-
-    console.log("3");
-
-    const currentBid = await Bid.findById(newBid._id)
-      .populate("freelancerId", "avatar username fullname email")
-      .populate("gigId", "title description budget")
-      .lean();
-
-    // Set cookies and redirect
-    const response = new ApiResponse(
-      200,
-      currentBid,
-      "New Bid Created successfully On GigFlow platform",
-    );
-
-    // Send All Projects To The Frontend....
-    return res.status(response.statusCode).json(response);
-  } catch (error) {
-    // Handle any errors that occur during user creation
-    throw new ApiError(500, "Internal server error", [
-      {
-        field: "server",
-        message: "Internal server error In The createBid Controller",
-      },
-    ]);
+  // 2️⃣ Check gig existence
+  const gig = await Gig.findById(gigId);
+  if (!gig) {
+    throw new ApiError(404, "Gig not found");
   }
+
+  // 3️⃣ Prevent owner from bidding
+  if (gig.ownerId.toString() === userId.toString()) {
+    throw new ApiError(400, "You cannot bid on your own gig");
+  }
+
+  // 4️⃣ Prevent duplicate bids
+  const existingBid = await Bid.findOne({
+    gigId,
+    freelancerId: userId,
+  });
+
+  if (existingBid) {
+    throw new ApiError(409, "You have already placed a bid on this gig");
+  }
+
+  // 5️⃣ Create bid
+  const newBid = await Bid.create({
+    gigId,
+    freelancerId: userId, // mongoose casts automatically
+    message,
+    status: "pending",
+  });
+
+  if (!newBid) {
+    throw new ApiError(400, "Bid creation failed");
+  }
+
+  // 6️⃣ Populate response
+  const populatedBid = await Bid.findById(newBid._id)
+    .populate("freelancerId", "avatar username fullname email")
+    .populate("gigId", "title description budget")
+    .lean();
+
+  // 7️⃣ Send response
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        populatedBid,
+        "New bid created successfully on GigFlow platform",
+      ),
+    );
 });
 
 const registerBid = asyncHandler(async (req, res) => {
   const { bidId } = req.params;
+  const userId = req.user?._id;
 
-  console.log("registerBid called with bidId:", bidId);
-  console.log("request userId:", req.user?._id);
+  console.log("▶️ registerBid called", { bidId, userId });
 
-  try {
-    // Fetch bid and related gig
-    const bidExists = await Bid.findById(bidId).populate(
-      "gigId",
-      "_id ownerId status",
-    );
-
-    if (!bidExists || bidExists.gigId.status !== "open") {
-      console.log("Bid not found:", bidId);
-      throw new ApiError(404, "Bid Not Found");
-    }
-
-    console.log("Bid found:", bidExists._id);
-    console.log("Gig ownerId:", bidExists.gigId.ownerId);
-
-    // Authorization check
-    if (bidExists.gigId.ownerId.toString() !== req.user._id.toString()) {
-      console.log(
-        "Unauthorized access. Gig owner:",
-        bidExists.gigId.ownerId,
-        "User:",
-        req.user._id,
-      );
-      throw new ApiError(403, "You are not authorized to register this bid");
-    }
-
-    console.log("Current bid status:", bidExists.status);
-
-    // Prevent re-processing
-    if (bidExists.status === "hired" || bidExists.status === "rejected") {
-      console.log("Bid already processed:", bidExists.status);
-      throw new ApiError(400, "This bid has already been processed");
-    }
-
-    // Reject all bids for the gig
-    console.log("Rejecting all bids for gigId:", bidExists.gigId._id);
-
-    await findByIdAndUpdate(bidExists.gigId._id, { status: "assigned" });
-
-    const rejectResult = await Bid.updateMany(
-      { gigId: bidExists.gigId._id },
-      { $set: { status: "rejected" } },
-    );
-
-    console.log("Rejected bids count:", rejectResult.modifiedCount);
-
-    // Hire selected bid
-    console.log("Hiring bid:", bidId);
-
-    const hiredBid = await Bid.findByIdAndUpdate(
-      bidId,
-      { $set: { status: "hired" } },
-      { new: true },
-    );
-
-    console.log("Bid hired successfully:", hiredBid?._id);
-
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(
-          200,
-          hiredBid,
-          "Bid registered successfully. Other bids rejected.",
-        ),
-      );
-  } catch (error) {
-    console.error("Error in registerBid controller:", error);
-
-    if (error instanceof ApiError) {
-      throw error;
-    }
-
-    throw new ApiError(500, "Internal server error", [
-      {
-        field: "server",
-        message: "Internal server error in registerBid controller",
-      },
-    ]);
+  if (!bidId || !userId) {
+    throw new ApiError(400, "Invalid request");
   }
+
+  // 1️⃣ Fetch bid with gig
+  const bid = await Bid.findById(bidId).populate("gigId", "_id ownerId status");
+
+  if (!bid) {
+    console.log("❌ Bid not found");
+    throw new ApiError(404, "Bid not found");
+  }
+
+  if (!bid.gigId) {
+    console.log("❌ Gig not linked with bid");
+    throw new ApiError(500, "Gig not found for this bid");
+  }
+
+  // 2️⃣ Check gig status
+  if (bid.gigId.status !== "open") {
+    console.log("❌ Gig not open", bid.gigId.status);
+    throw new ApiError(400, "Gig is not open for hiring");
+  }
+
+  // 3️⃣ Authorization check
+  if (bid.gigId.ownerId.toString() !== userId.toString()) {
+    console.log("🚫 Unauthorized access");
+    throw new ApiError(403, "You are not authorized");
+  }
+
+  // 4️⃣ Prevent duplicate processing
+  if (bid.status === "hired" || bid.status === "rejected") {
+    console.log("⚠️ Bid already processed", bid.status);
+    throw new ApiError(400, "Bid already processed");
+  }
+
+  // 5️⃣ Reject other bids
+  console.log("🔁 Rejecting other bids");
+  await Bid.updateMany(
+    { gigId: bid.gigId._id, _id: { $ne: bidId } },
+    { $set: { status: "rejected" } },
+  );
+
+  // 6️⃣ Hire selected bid
+  console.log("✅ Hiring selected bid");
+  const hiredBid = await Bid.findByIdAndUpdate(
+    bidId,
+    { $set: { status: "hired" } },
+    { new: true },
+  );
+
+  // 7️⃣ Update gig status
+  await Gig.findByIdAndUpdate(bid.gigId._id, {
+    $set: { status: "assigned" },
+  });
+
+  console.log("🎉 Bid hired successfully", hiredBid._id);
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        hiredBid,
+        "Bid hired successfully. Other bids rejected.",
+      ),
+    );
 });
 
 export { getAllBidsOnGig, postBid, registerBid };

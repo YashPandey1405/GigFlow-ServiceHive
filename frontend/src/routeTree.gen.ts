@@ -12,8 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as HomeIndexRouteImport } from './routes/home/index'
 import { Route as authSignupRouteImport } from './routes/(auth)/signup'
+import { Route as authProfileRouteImport } from './routes/(auth)/profile'
 import { Route as authLogoutRouteImport } from './routes/(auth)/logout'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
+import { Route as HomegigsGigCreateRouteImport } from './routes/home/(gigs)/gig/create'
 import { Route as HomegigsGigGigIdRouteImport } from './routes/home/(gigs)/gig.$gigId'
 import { Route as HomebidsBidGigIdRouteImport } from './routes/home/(bids)/bid.$gigId'
 
@@ -32,6 +34,11 @@ const authSignupRoute = authSignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const authProfileRoute = authProfileRouteImport.update({
+  id: '/(auth)/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const authLogoutRoute = authLogoutRouteImport.update({
   id: '/(auth)/logout',
   path: '/logout',
@@ -40,6 +47,11 @@ const authLogoutRoute = authLogoutRouteImport.update({
 const authLoginRoute = authLoginRouteImport.update({
   id: '/(auth)/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomegigsGigCreateRoute = HomegigsGigCreateRouteImport.update({
+  id: '/home/(gigs)/gig/create',
+  path: '/home/gig/create',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomegigsGigGigIdRoute = HomegigsGigGigIdRouteImport.update({
@@ -57,29 +69,35 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/login': typeof authLoginRoute
   '/logout': typeof authLogoutRoute
+  '/profile': typeof authProfileRoute
   '/signup': typeof authSignupRoute
   '/home': typeof HomeIndexRoute
   '/home/bid/$gigId': typeof HomebidsBidGigIdRoute
   '/home/gig/$gigId': typeof HomegigsGigGigIdRoute
+  '/home/gig/create': typeof HomegigsGigCreateRoute
 }
 export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/login': typeof authLoginRoute
   '/logout': typeof authLogoutRoute
+  '/profile': typeof authProfileRoute
   '/signup': typeof authSignupRoute
   '/home': typeof HomeIndexRoute
   '/home/bid/$gigId': typeof HomebidsBidGigIdRoute
   '/home/gig/$gigId': typeof HomegigsGigGigIdRoute
+  '/home/gig/create': typeof HomegigsGigCreateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/about': typeof AboutRoute
   '/(auth)/login': typeof authLoginRoute
   '/(auth)/logout': typeof authLogoutRoute
+  '/(auth)/profile': typeof authProfileRoute
   '/(auth)/signup': typeof authSignupRoute
   '/home/': typeof HomeIndexRoute
   '/home/(bids)/bid/$gigId': typeof HomebidsBidGigIdRoute
   '/home/(gigs)/gig/$gigId': typeof HomegigsGigGigIdRoute
+  '/home/(gigs)/gig/create': typeof HomegigsGigCreateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -87,38 +105,46 @@ export interface FileRouteTypes {
     | '/about'
     | '/login'
     | '/logout'
+    | '/profile'
     | '/signup'
     | '/home'
     | '/home/bid/$gigId'
     | '/home/gig/$gigId'
+    | '/home/gig/create'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/about'
     | '/login'
     | '/logout'
+    | '/profile'
     | '/signup'
     | '/home'
     | '/home/bid/$gigId'
     | '/home/gig/$gigId'
+    | '/home/gig/create'
   id:
     | '__root__'
     | '/about'
     | '/(auth)/login'
     | '/(auth)/logout'
+    | '/(auth)/profile'
     | '/(auth)/signup'
     | '/home/'
     | '/home/(bids)/bid/$gigId'
     | '/home/(gigs)/gig/$gigId'
+    | '/home/(gigs)/gig/create'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   authLoginRoute: typeof authLoginRoute
   authLogoutRoute: typeof authLogoutRoute
+  authProfileRoute: typeof authProfileRoute
   authSignupRoute: typeof authSignupRoute
   HomeIndexRoute: typeof HomeIndexRoute
   HomebidsBidGigIdRoute: typeof HomebidsBidGigIdRoute
   HomegigsGigGigIdRoute: typeof HomegigsGigGigIdRoute
+  HomegigsGigCreateRoute: typeof HomegigsGigCreateRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -144,6 +170,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authSignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(auth)/profile': {
+      id: '/(auth)/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof authProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(auth)/logout': {
       id: '/(auth)/logout'
       path: '/logout'
@@ -156,6 +189,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof authLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home/(gigs)/gig/create': {
+      id: '/home/(gigs)/gig/create'
+      path: '/home/gig/create'
+      fullPath: '/home/gig/create'
+      preLoaderRoute: typeof HomegigsGigCreateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home/(gigs)/gig/$gigId': {
@@ -179,10 +219,12 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   authLoginRoute: authLoginRoute,
   authLogoutRoute: authLogoutRoute,
+  authProfileRoute: authProfileRoute,
   authSignupRoute: authSignupRoute,
   HomeIndexRoute: HomeIndexRoute,
   HomebidsBidGigIdRoute: HomebidsBidGigIdRoute,
   HomegigsGigGigIdRoute: HomegigsGigGigIdRoute,
+  HomegigsGigCreateRoute: HomegigsGigCreateRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

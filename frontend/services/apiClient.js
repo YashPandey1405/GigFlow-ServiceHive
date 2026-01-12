@@ -2,7 +2,8 @@ import axios from "axios";
 
 class ApiClient {
   constructor() {
-    this.baseURL = "https://gigflow-servicehive.onrender.com/api/v1";
+    this.baseURL = "http://localhost:8080/api/v1";
+    // this.baseURL = "https://gigflow-servicehive.onrender.com/api/v1";
 
     this.client = axios.create({
       baseURL: this.baseURL,
@@ -48,10 +49,26 @@ class ApiClient {
   // ============================
 
   async signup(formData) {
-    return this.customRequest("/auth/register", {
-      method: "POST",
-      body: formData, // 👈 FormData supported
-    });
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/auth/register`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true, // if you use cookies / auth
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error?.response?.data?.message || "Signup failed. Please try again.",
+      };
+    }
   }
 
   async login(email, username, password) {
@@ -79,6 +96,13 @@ class ApiClient {
     });
   }
 
+  async postgig(title, description, budget) {
+    return this.customRequest(`/gig`, {
+      method: "POST",
+      body: { title, description, budget },
+    });
+  }
+
   async getGigByID(gigId) {
     return this.customRequest(`/bids/${gigId}`, {
       method: "GET",
@@ -90,6 +114,25 @@ class ApiClient {
       method: "POST",
       body: { gigId, message },
     });
+  }
+
+  async selectBid(bidId) {
+    try {
+      const response = await axios.patch(
+        `${this.baseURL}/bids/${bidId}/hire`,
+        null, // no body needed
+        {
+          withCredentials: true, // IMPORTANT if you use cookies/JWT
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      return {
+        success: false,
+        message: error?.response?.data?.message || "Failed to select bid",
+      };
+    }
   }
 
   async healthCheck() {
