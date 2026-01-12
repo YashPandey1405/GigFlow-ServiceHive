@@ -12,8 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as HomeIndexRouteImport } from './routes/home/index'
 import { Route as authSignupRouteImport } from './routes/(auth)/signup'
+import { Route as authLogoutRouteImport } from './routes/(auth)/logout'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as HomegigsGigGigIdRouteImport } from './routes/home/(gigs)/gig.$gigId'
+import { Route as HomebidsBidGigIdRouteImport } from './routes/home/(bids)/bid.$gigId'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
@@ -30,6 +32,11 @@ const authSignupRoute = authSignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const authLogoutRoute = authLogoutRouteImport.update({
+  id: '/(auth)/logout',
+  path: '/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const authLoginRoute = authLoginRouteImport.update({
   id: '/(auth)/login',
   path: '/login',
@@ -40,48 +47,77 @@ const HomegigsGigGigIdRoute = HomegigsGigGigIdRouteImport.update({
   path: '/home/gig/$gigId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HomebidsBidGigIdRoute = HomebidsBidGigIdRouteImport.update({
+  id: '/home/(bids)/bid/$gigId',
+  path: '/home/bid/$gigId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/login': typeof authLoginRoute
+  '/logout': typeof authLogoutRoute
   '/signup': typeof authSignupRoute
   '/home': typeof HomeIndexRoute
+  '/home/bid/$gigId': typeof HomebidsBidGigIdRoute
   '/home/gig/$gigId': typeof HomegigsGigGigIdRoute
 }
 export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/login': typeof authLoginRoute
+  '/logout': typeof authLogoutRoute
   '/signup': typeof authSignupRoute
   '/home': typeof HomeIndexRoute
+  '/home/bid/$gigId': typeof HomebidsBidGigIdRoute
   '/home/gig/$gigId': typeof HomegigsGigGigIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/about': typeof AboutRoute
   '/(auth)/login': typeof authLoginRoute
+  '/(auth)/logout': typeof authLogoutRoute
   '/(auth)/signup': typeof authSignupRoute
   '/home/': typeof HomeIndexRoute
+  '/home/(bids)/bid/$gigId': typeof HomebidsBidGigIdRoute
   '/home/(gigs)/gig/$gigId': typeof HomegigsGigGigIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/about' | '/login' | '/signup' | '/home' | '/home/gig/$gigId'
+  fullPaths:
+    | '/about'
+    | '/login'
+    | '/logout'
+    | '/signup'
+    | '/home'
+    | '/home/bid/$gigId'
+    | '/home/gig/$gigId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/about' | '/login' | '/signup' | '/home' | '/home/gig/$gigId'
+  to:
+    | '/about'
+    | '/login'
+    | '/logout'
+    | '/signup'
+    | '/home'
+    | '/home/bid/$gigId'
+    | '/home/gig/$gigId'
   id:
     | '__root__'
     | '/about'
     | '/(auth)/login'
+    | '/(auth)/logout'
     | '/(auth)/signup'
     | '/home/'
+    | '/home/(bids)/bid/$gigId'
     | '/home/(gigs)/gig/$gigId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   authLoginRoute: typeof authLoginRoute
+  authLogoutRoute: typeof authLogoutRoute
   authSignupRoute: typeof authSignupRoute
   HomeIndexRoute: typeof HomeIndexRoute
+  HomebidsBidGigIdRoute: typeof HomebidsBidGigIdRoute
   HomegigsGigGigIdRoute: typeof HomegigsGigGigIdRoute
 }
 
@@ -108,6 +144,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authSignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(auth)/logout': {
+      id: '/(auth)/logout'
+      path: '/logout'
+      fullPath: '/logout'
+      preLoaderRoute: typeof authLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(auth)/login': {
       id: '/(auth)/login'
       path: '/login'
@@ -122,14 +165,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomegigsGigGigIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/home/(bids)/bid/$gigId': {
+      id: '/home/(bids)/bid/$gigId'
+      path: '/home/bid/$gigId'
+      fullPath: '/home/bid/$gigId'
+      preLoaderRoute: typeof HomebidsBidGigIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   authLoginRoute: authLoginRoute,
+  authLogoutRoute: authLogoutRoute,
   authSignupRoute: authSignupRoute,
   HomeIndexRoute: HomeIndexRoute,
+  HomebidsBidGigIdRoute: HomebidsBidGigIdRoute,
   HomegigsGigGigIdRoute: HomegigsGigGigIdRoute,
 }
 export const routeTree = rootRouteImport

@@ -123,10 +123,10 @@ const registerBid = asyncHandler(async (req, res) => {
     // Fetch bid and related gig
     const bidExists = await Bid.findById(bidId).populate(
       "gigId",
-      "_id ownerId",
+      "_id ownerId status",
     );
 
-    if (!bidExists) {
+    if (!bidExists || bidExists.gigId.status !== "open") {
       console.log("Bid not found:", bidId);
       throw new ApiError(404, "Bid Not Found");
     }
@@ -155,6 +155,8 @@ const registerBid = asyncHandler(async (req, res) => {
 
     // Reject all bids for the gig
     console.log("Rejecting all bids for gigId:", bidExists.gigId._id);
+
+    await findByIdAndUpdate(bidExists.gigId._id, { status: "assigned" });
 
     const rejectResult = await Bid.updateMany(
       { gigId: bidExists.gigId._id },

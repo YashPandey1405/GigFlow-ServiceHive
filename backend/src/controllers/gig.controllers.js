@@ -52,6 +52,7 @@ const postGig = asyncHandler(async (req, res) => {
       description,
       budget,
       ownerId: new mongoose.Types.ObjectId(userID),
+      status: "open",
     });
 
     // If The Creation Of The Project Fails....

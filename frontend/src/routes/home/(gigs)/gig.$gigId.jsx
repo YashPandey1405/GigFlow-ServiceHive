@@ -21,6 +21,7 @@ function RouteComponent() {
 
         if (response?.success) {
           setGigData(response.data);
+          console.log(response.data);
           setMessage(response.message || "");
         } else {
           setError(true);
@@ -65,28 +66,62 @@ function RouteComponent() {
           GigFlow
         </Link>
 
-        <Link to="/profile" className="flex items-center gap-3">
-          <span className="text-sm text-zinc-300">Profile</span>
-          <img
-            src="https://via.placeholder.com/40"
-            alt="User"
-            className="w-10 h-10 rounded-full border border-zinc-700"
-          />
-        </Link>
+        <div className="flex items-center gap-4">
+          {/* Profile Avatar */}
+          <Link to="/profile">
+            <img
+              src="https://via.placeholder.com/40"
+              alt="User"
+              className="w-10 h-10 rounded-full border border-zinc-700 hover:border-indigo-500 transition"
+            />
+          </Link>
+
+          {/* Logout Button */}
+          <Link to="/logout">
+            <button className="rounded-lg bg-red-600 hover:bg-red-700 transition px-4 py-2 text-sm font-medium text-white">
+              Logout
+            </button>
+          </Link>
+        </div>
       </nav>
 
       {/* Main */}
       <main className="max-w-5xl mx-auto px-6 py-10 space-y-10">
         {/* Gig Details */}
-        <section className="rounded-2xl bg-zinc-900/70 border border-zinc-800 p-8">
-          <h1 className="text-3xl font-bold mb-4">{gig.title}</h1>
+        <section
+          className={`rounded-2xl border p-8 transition ${
+            gig?.status === "assigned"
+              ? "bg-emerald-500/10 border-emerald-500/30"
+              : "bg-indigo-500/10 border-indigo-500/30"
+          }`}
+        >
+          <div className="flex items-start justify-between mb-4">
+            <h1 className="text-3xl font-bold">{gig.title}</h1>
 
-          <p className="text-zinc-400 mb-6">{gig.description}</p>
+            {/* Status Badge */}
+            <span
+              className={`px-4 py-1 rounded-full text-sm font-medium capitalize ${
+                gig?.status === "assigned"
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                  : "bg-indigo-500/20 text-indigo-400 border border-indigo-500/40"
+              }`}
+            >
+              {gig?.status || "open"}
+            </span>
+          </div>
 
-          <div className="flex flex-wrap gap-6 text-sm">
+          <p className="text-zinc-400 mb-8">{gig.description}</p>
+
+          <div className="flex flex-wrap gap-8 text-sm">
             <div>
               <span className="text-zinc-500">Budget</span>
-              <p className="text-indigo-400 font-semibold text-lg">
+              <p
+                className={`font-semibold text-lg ${
+                  gig?.status === "assigned"
+                    ? "text-emerald-400"
+                    : "text-indigo-400"
+                }`}
+              >
                 ₹ {gig.budget}
               </p>
             </div>
@@ -107,7 +142,19 @@ function RouteComponent() {
 
         {/* Bids Section */}
         <section>
-          <h2 className="text-2xl font-semibold mb-6">Freelancer Bids</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-semibold">Freelancer Bids</h2>
+
+            {gig?.status !== "assigned" && (
+              <Link
+                to="/home/bid/$gigId"
+                params={{ gigId: gig._id }}
+                className="rounded-lg bg-zinc-700 hover:bg-zinc-600 transition px-4 py-2 text-sm font-medium"
+              >
+                Place Bid
+              </Link>
+            )}
+          </div>
 
           {bids.length === 0 && (
             <div className="text-zinc-400 bg-zinc-900/50 border border-zinc-800 rounded-lg p-6 text-center">

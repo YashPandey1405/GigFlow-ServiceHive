@@ -85,6 +85,13 @@ class ApiClient {
     });
   }
 
+  async postBid(gigId, message) {
+    return this.customRequest(`/bids`, {
+      method: "POST",
+      body: { gigId, message },
+    });
+  }
+
   async healthCheck() {
     return this.customRequest(`/healthcheck`, {
       method: "GET",

@@ -37,20 +37,7 @@ function RouteComponent() {
 
   // 🔥 DELETE HANDLER
   const handleDelete = async (gigId) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this gig?"
-    );
-
-    if (!confirmDelete) return;
-
-    try {
-      // 🔁 Replace with real API later
-      // await apiClient.deleteGig(gigId);
-
-      setGigs((prev) => prev.filter((gig) => gig._id !== gigId));
-    } catch (error) {
-      alert("Failed to delete gig. Try again.");
-    }
+    alert("This Will Be Done By Version-2");
   };
 
   return (
@@ -59,14 +46,23 @@ function RouteComponent() {
       <nav className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur">
         <h1 className="text-xl font-bold">GigFlow</h1>
 
-        <Link to="/profile" className="flex items-center gap-3">
-          <span className="text-sm text-zinc-300">Profile</span>
-          <img
-            src="https://via.placeholder.com/40"
-            alt="User"
-            className="w-10 h-10 rounded-full border border-zinc-700"
-          />
-        </Link>
+        <div className="flex items-center gap-4">
+          {/* Profile Avatar */}
+          <Link to="/profile">
+            <img
+              src="https://via.placeholder.com/40"
+              alt="User"
+              className="w-10 h-10 rounded-full border border-zinc-700 hover:border-indigo-500 transition"
+            />
+          </Link>
+
+          {/* Logout Button */}
+          <Link to="/logout">
+            <button className="rounded-lg bg-red-600 hover:bg-red-700 transition px-4 py-2 text-sm font-medium text-white">
+              Logout
+            </button>
+          </Link>
+        </div>
       </nav>
 
       <main className="max-w-5xl mx-auto px-6 py-10">
@@ -124,14 +120,16 @@ function RouteComponent() {
                     View
                   </Link>
 
-                  <Link
-                    to="/home/gig/edit/$gigId"
-                    params={{ gigId: gig._id }}
+                  {/* <Link to="/home/gig/edit/$gigId" params={{ gigId: gig._id }}>
+                    Edit
+                  </Link> */}
+
+                  <button
+                    onClick={() => handleDelete(gig._id)}
                     className="flex-1 text-center rounded-lg bg-zinc-700 hover:bg-zinc-600 transition py-2 text-sm font-medium"
                   >
                     Edit
-                  </Link>
-
+                  </button>
                   <button
                     onClick={() => handleDelete(gig._id)}
                     className="flex-1 rounded-lg bg-red-600/80 hover:bg-red-600 transition py-2 text-sm font-medium"

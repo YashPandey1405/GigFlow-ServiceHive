@@ -1,6 +1,9 @@
 import * as React from "react";
 import { Outlet, createRootRoute } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { authStore } from "../store/authStore";
 import "tailwindcss";
 
 export const Route = createRootRoute({
@@ -8,6 +11,27 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+  const router = useRouter();
+
+  const isLoggedInZustand = authStore((state) => state.isLoggedIn);
+
+  useEffect(() => {
+    const redirectToAboutPage = async () => {
+      try {
+        console.log("The Logged In User Is", isLoggedInZustand);
+        if (!isLoggedInZustand) {
+          router.navigate({ to: "/about" });
+        }
+      } catch (error) {
+        setData({
+          success: false,
+          message: "User Not Logged In failed. Try again later.",
+        });
+      }
+    };
+
+    redirectToAboutPage();
+  }, [router]);
   return (
     <React.Fragment>
       <Outlet />
