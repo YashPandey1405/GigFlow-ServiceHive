@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as HomeIndexRouteImport } from './routes/home/index'
 import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as HomegigsGigGigIdRouteImport } from './routes/home/(gigs)/gig.$gigId'
 
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HomeIndexRoute = HomeIndexRouteImport.update({
   id: '/home/',
   path: '/home/',
@@ -36,12 +42,14 @@ const HomegigsGigGigIdRoute = HomegigsGigGigIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/about': typeof AboutRoute
   '/login': typeof authLoginRoute
   '/signup': typeof authSignupRoute
   '/home': typeof HomeIndexRoute
   '/home/gig/$gigId': typeof HomegigsGigGigIdRoute
 }
 export interface FileRoutesByTo {
+  '/about': typeof AboutRoute
   '/login': typeof authLoginRoute
   '/signup': typeof authSignupRoute
   '/home': typeof HomeIndexRoute
@@ -49,6 +57,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/about': typeof AboutRoute
   '/(auth)/login': typeof authLoginRoute
   '/(auth)/signup': typeof authSignupRoute
   '/home/': typeof HomeIndexRoute
@@ -56,11 +65,12 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/login' | '/signup' | '/home' | '/home/gig/$gigId'
+  fullPaths: '/about' | '/login' | '/signup' | '/home' | '/home/gig/$gigId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/signup' | '/home' | '/home/gig/$gigId'
+  to: '/about' | '/login' | '/signup' | '/home' | '/home/gig/$gigId'
   id:
     | '__root__'
+    | '/about'
     | '/(auth)/login'
     | '/(auth)/signup'
     | '/home/'
@@ -68,6 +78,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  AboutRoute: typeof AboutRoute
   authLoginRoute: typeof authLoginRoute
   authSignupRoute: typeof authSignupRoute
   HomeIndexRoute: typeof HomeIndexRoute
@@ -76,6 +87,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/home/': {
       id: '/home/'
       path: '/home'
@@ -108,6 +126,7 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  AboutRoute: AboutRoute,
   authLoginRoute: authLoginRoute,
   authSignupRoute: authSignupRoute,
   HomeIndexRoute: HomeIndexRoute,
