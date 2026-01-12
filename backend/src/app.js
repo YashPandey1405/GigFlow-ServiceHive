@@ -24,7 +24,11 @@ app.use(
     // 📦 Headers allowed in requests from frontend to backend
     // 📤 Headers allowed to be exposed to the frontend (useful for tokens/cookies)
 
-    origin: ["http://localhost:5173", "https://gig-flow-service-hive.vercel.app"],
+    origin: [
+      "http://localhost:5173",
+      "https://gig-flow-service-hive.vercel.app",
+      "https://gigflow.yashpandey.xyz",
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Accept"],
